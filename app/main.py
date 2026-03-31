@@ -22,3 +22,8 @@ def get_panels():
 @app.post("/panels/build")
 def build_panels():
     return service.build()
+
+# 🔄 padroniza para cadastro de lista de genes no emedgene
+@app.post("/panels/build-formatted")
+def build_formatted_panels():
+    return service.emedgene_formatted()

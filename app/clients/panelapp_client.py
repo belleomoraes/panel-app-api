@@ -10,6 +10,7 @@ from app.config import PANEL_APP_BASE_URL, PANEL_APP_TOKEN
 # arquivos de cache
 NCBI_CACHE_FILE = "ncbi_cache.json"
 PANELS_CACHE_FILE = "panels_with_genes_cache.json"
+OUTPUT_FILE = "formatted_panels.json"
 
 
 class PanelAppClient:
@@ -100,20 +101,27 @@ class PanelAppClient:
         for i, panel in enumerate(panels, start=1):
             panel_id = str(panel["id"])  # string pra chave JSON
             panel_name = f"{panel['name']} - PanelApp v.{panel['version']}"
+            number_of_genes = panel['stats']['number_of_genes']
 
             # 🔁 já está em cache?
-            if panel_id in self.panels_cache:
-                print(f"⏭️ [{i}/{total}] Pulando (cache): {panel_name}")
-                continue
+            # if panel_id in self.panels_cache:
+            #     print(f"⏭️ [{i}/{total}] Pulando (cache): {panel_name}")
+            #     continue
 
             print(f"➡️ [{i}/{total}] Processando: {panel_name}")
 
             try:
                 print("   🔄 Buscando genes...")
+                print(f"✅ {number_of_genes} genes encontrados (GREEN + OTHERS)")
                 genes_data = self.get_panel_genes(panel["id"])
-                genes = [g["gene_data"]["gene_symbol"] for g in genes_data]
+                
+                genes = [
+                    g["gene_data"]["gene_symbol"]
+                    for g in genes_data
+                    if g["confidence_level"] == "3"
+                ]
 
-                print(f"   ✅ {len(genes)} genes encontrados")
+                print(f"   ✅{len(genes)} genes encontrados (GREEN)" )
 
             except Exception as e:
                 print(f"   ❌ Erro no painel {panel_id}: {e}")
@@ -135,3 +143,66 @@ class PanelAppClient:
     
     def get_cached_panels(self):
         return list(self.panels_cache.values())
+    
+
+        print("🔄 Coletando genes únicos...")
+
+        all_genes = set()
+
+        for panel in self.panels_cache.values():
+            all_genes.update(panel["genes"])
+
+        all_genes = list(all_genes)
+
+        print(f"🧬 Total de genes únicos: {len(all_genes)}")
+
+        # 🔁 batch em chunks (NCBI não gosta de queries gigantes)
+        chunk_size = 200
+        gene_map = {}
+
+        for i in range(0, len(all_genes), chunk_size):
+            chunk = all_genes[i:i + chunk_size]
+
+            print(f"➡️ Buscando chunk {i} - {i + len(chunk)}")
+
+            try:
+                result = self.ncbi_client.get_gene_ids_batch(chunk)
+                gene_map.update(result)
+            except Exception as e:
+                print(f"❌ Erro no chunk: {e}")
+
+        print("🔧 Montando painéis formatados...")
+
+        formatted_panels = []
+
+        for panel in self.panels_cache.values():
+            formatted_genes = []
+
+            for gene_symbol in panel["genes"]:
+                ncbi_id = gene_map.get(gene_symbol)
+
+                formatted_genes.append({
+                    "id": "",
+                    "name": gene_symbol,
+                    "ncbi_id": str(ncbi_id) if ncbi_id else ""
+                })
+
+            formatted_panels.append({
+                "genes": formatted_genes,
+                "id": panel["id"],
+                "name": panel["name"],
+                "visible": panel["visible"]
+            })
+
+        print("💾 Salvando JSON...")
+
+        with open(OUTPUT_FILE, "w") as f:
+            json.dump(formatted_panels, f, indent=2)
+
+        print("🎯 Finalizado!")
+
+        return {
+            "message": "Formatted panels generated",
+            "total_panels": len(formatted_panels),
+            "total_genes": len(gene_map)
+        }
