@@ -77,7 +77,7 @@ uvicorn main:app --reload
 ## 📡 Endpoints
 ### 🔹 GET /panels
 
-Retorna os painéis de genes obtidos do PanelApp, em cache
+Retorna os painéis de genes obtidos do PanelApp, em cache. Os genes filtrados são os genes GREEN do PanelApp. 
 
 Exemplo de resposta:
 ```bash
@@ -90,9 +90,9 @@ Exemplo de resposta:
 ]
 ```
 
-### 🔹 GET /panels/build
+### 🔹 POST /panels/build
 
-Retorna os painéis de genes obtidos do PanelApp, após processamento. *Tempo de processamento: ~45min*
+Retorna os painéis de genes obtidos do PanelApp, após processamento. Os genes filtrados são os genes GREEN do PanelApp. *Tempo de processamento: ~20min*
 
 Exemplo de resposta:
 ```bash
@@ -101,6 +101,27 @@ Exemplo de resposta:
     "id": 1,
     "name": "Breast cancer panel",
     "genes": ["BRCA1", "BRCA2"]
+  }
+]
+```
+### 🔹 POST /panels/build-formatted
+
+Retorna os painéis de genes GREEN obtidos do PanelApp, após processamento, mas no formato JSON esperado para o cadastro de lista de genes no Emedgene. Inclui o NCBI Id de cada gene
+
+Exemplo de resposta:
+```bash
+[
+  {
+        "genes": [
+            {
+                "id": "",
+                "name": "HMBS",
+                "ncbi_id": "10059"
+            }
+        ],
+        "id": 1207,
+        "name": "Acute intermittent porphyria - PanelApp v.1.6",
+        "visible": true
   }
 ]
 ```
@@ -117,10 +138,4 @@ Exemplo de resposta:
 ---
 
 ## 🧠 Próximos passos (Roadmap)
- - Implementar cache de requisições
- - Adicionar paginação nos endpoints
- - Criar endpoint para busca de genes específicos
- - Normalização e validação de dados
- - Integração com banco de dados
- - Autenticação e controle de acesso
- - Separação em painel GREEN e OTHERS
+ - Subir API via docker
