@@ -139,3 +139,4 @@ Exemplo de resposta:
 
 ## 🧠 Próximos passos (Roadmap)
  - Subir API via docker
+ - Cadastro no Emedgene
