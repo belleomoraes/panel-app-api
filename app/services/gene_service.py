@@ -67,7 +67,7 @@ class GeneService:
             print("=" * 80)
             print(f"🚀 Iniciando cadastro de {total} listas de genes no Emedgene")
             print("=" * 80)
-
+            exit()  # Adicione esta linha para interromper a execução do código
             created = []
             failed = []
 

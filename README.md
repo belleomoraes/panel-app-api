@@ -69,7 +69,7 @@ pip install -r requirements.txt
 
 ### 4. Execute a aplicação
 ```bash
-uvicorn main:app --reload
+uvicorn app.api.main:app --reload
 ```
 
 ---
