@@ -25,3 +25,8 @@ def build_panels(service: GeneService = Depends(get_gene_service)):
 @router.post("/panels/build-formatted")
 def build_formatted_panels(service: GeneService = Depends(get_gene_service)):
     return service.emedgene_formatted()
+
+# 🔄 cadastra as listas de genes no Emedgene
+@router.post("/emedgene/gene-lists")
+def build_gene_lists(service: GeneService = Depends(get_gene_service)):
+    return service.emedgene_formatted()
